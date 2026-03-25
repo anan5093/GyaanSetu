@@ -1,6 +1,6 @@
 class RAGService:
 
-    def __init__(self, vector_store, embedder, llm_client, top_k=5):
+    def __init__(self, vector_store, embedder, llm_client, top_k=3):
 
         self.vector_store = vector_store
         self.embedder = embedder
