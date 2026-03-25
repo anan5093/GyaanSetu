@@ -3,110 +3,145 @@ import os
 import re
 
 
-class DatasetChunker:
+class DatasetCleaner:
 
     def __init__(
         self,
-        input_path="data/cleaned_dataset/cleaned_rows.json",
-        output_path="data/processed_chunks/chunks.json",
-        chunk_size=220,
-        overlap=40
+        class_id: int,
+        subject: str,
+        base_data_dir: str = "data",
+        chunk_size: int = 320,
+        overlap: int = 60
     ):
-        self.input_path = input_path
-        self.output_path = output_path
+
+        self.class_id = class_id
+        self.subject = subject.lower()
+
+        self.input_path = os.path.join(
+            base_data_dir,
+            "raw_dataset",
+            f"class{class_id}",
+            f"ncert_{self.subject}{class_id}.json"
+        )
+
+        self.output_path = os.path.join(
+            base_data_dir,
+            "cleaned_dataset",
+            f"class{class_id}",
+            "cleaned_rows.json"
+        )
+
         self.chunk_size = chunk_size
         self.overlap = overlap
 
-def chunk_text(self, text):
+    # ==============================
+    # Sentence Aware Chunking
+    # ==============================
 
+    def chunk_text(self, text):
 
+        if "Question:" in text:
+            return [text.strip()]
 
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+        sentences = re.split(r'(?<=[.!?])\s+', text)
 
-    chunks = []
-    current_chunk = ""
+        chunks = []
+        current_chunk = ""
 
-    for sent in sentences:
+        for sent in sentences:
 
-        sent = sent.strip()
-        if not sent:
-            continue
+            sent = sent.strip()
+            if not sent:
+                continue
 
-        # ⭐ Case 1 — sentence itself too large
-        if len(sent) > self.chunk_size:
+            if len(sent) > self.chunk_size:
 
-            # flush current
-            if current_chunk:
-                chunks.append(current_chunk.strip())
-                current_chunk = ""
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                    current_chunk = ""
 
-            # hard slice long sentence
-            start = 0
-            while start < len(sent):
-                part = sent[start:start + self.chunk_size]
-                chunks.append(part.strip())
-                start += self.chunk_size - self.overlap
+                start = 0
+                while start < len(sent):
+                    part = sent[start:start + self.chunk_size]
+                    chunks.append(part.strip())
+                    start += self.chunk_size - self.overlap
 
-            continue
+                continue
 
-        # ⭐ Case 2 — normal packing
-        if len(current_chunk) + len(sent) + 1 <= self.chunk_size:
+            if len(current_chunk) + len(sent) + 1 <= self.chunk_size:
 
-            if current_chunk:
-                current_chunk += " " + sent
+                current_chunk = (
+                    current_chunk + " " + sent
+                    if current_chunk else sent
+                )
+
             else:
-                current_chunk = sent
 
-        else:
+                chunks.append(current_chunk.strip())
 
+                overlap_text = (
+                    current_chunk[-self.overlap:]
+                    if len(current_chunk) > self.overlap
+                    else current_chunk
+                )
+
+                current_chunk = overlap_text + " " + sent
+
+        if current_chunk:
             chunks.append(current_chunk.strip())
 
-            overlap_text = (
-                current_chunk[-self.overlap:]
-                if len(current_chunk) > self.overlap
-                else current_chunk
-            )
+        return chunks
 
-            current_chunk = overlap_text + " " + sent
+    # ==============================
+    # Build Clean Dataset ⭐ IMPROVED
+    # ==============================
 
-    if current_chunk:
-        chunks.append(current_chunk.strip())
+    def build_clean_dataset(self):
 
-    return chunks
-    def build_chunks(self):
-
-        print("📖 Loading cleaned dataset...")
+        print(f"🧹 Cleaning dataset → Class {self.class_id} {self.subject}")
 
         with open(self.input_path, "r", encoding="utf-8") as f:
             rows = json.load(f)
 
-        all_chunks = []
-        chunk_id = 0
+        print("🔎 TOTAL ROWS:", len(rows))
+        print("🔎 SAMPLE ROW:", rows[0])
+
+        cleaned_rows = []
 
         for row in rows:
 
-            text_chunks = self.chunk_text(row["text"])
+            # ⭐ Build unified text field from HF schema
+            explanation = row.get("Explanation", "").strip()
+            question = row.get("Question", "").strip()
+            answer = row.get("Answer", "").strip()
+            topic = row.get("Topic", "").strip()
 
-            for c in text_chunks:
+            merged_text = (
+                f"Topic: {topic}. "
+                f"Explanation: {explanation} "
+                f"Question: {question} "
+                f"Answer: {answer}"
+            ).strip()
 
-                all_chunks.append({
-                    "chunk_id": chunk_id,
-                    "text": c,
-                    "topic": row["topic"],
-                    "difficulty": row["difficulty"],
-                    "question_type": row["question_type"],
-                    "complexity": row["complexity"]
+            text_chunks = self.chunk_text(merged_text)
+
+            for chunk in text_chunks:
+
+                cleaned_rows.append({
+                    "text": chunk,
+                    "topic": topic,
+                    "difficulty": row.get("Difficulty"),
+                    "question_type": row.get("QuestionType"),
+                    "complexity": row.get("QuestionComplexity")
                 })
 
-                chunk_id += 1
-
-        print(f"✅ Total chunks created: {len(all_chunks)}")
+        print(f"✅ Cleaned rows created: {len(cleaned_rows)}")
 
         os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
 
         with open(self.output_path, "w", encoding="utf-8") as f:
-            json.dump(all_chunks, f, ensure_ascii=False, indent=2)
+            json.dump(cleaned_rows, f, ensure_ascii=False, indent=2)
 
-        print(f"💾 Saved chunks at {self.output_path}")
+        print(f"💾 Saved at {self.output_path}")
 
-        return all_chunks
+        return cleaned_rows
