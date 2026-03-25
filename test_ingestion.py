@@ -4,6 +4,13 @@ chunker = DatasetChunker()
 
 chunks = chunker.build_chunks()
 
-print("\n------ SAMPLE CHUNK ------\n")
+print("\nTOTAL CHUNKS:", len(chunks))
 
-print(chunks[0])
+print("\nFirst chunk type:", chunks[0]["type"])
+print("Second chunk type:", chunks[1]["type"])
+
+print("\n--- SAMPLE CHUNK TEXT ---\n")
+
+print(chunks[0]["text"])
+print("\n" + "=" * 80 + "\n")
+print(chunks[1]["text"])

@@ -7,40 +7,57 @@ class DatasetChunker:
     def __init__(
         self,
         input_path="data/cleaned_dataset/cleaned_rows.json",
-        output_path="data/processed_chunks/chunks.json",
-        chunk_size=350,
-        overlap=60
+        output_path="data/processed_chunks/chunks.json"
     ):
         self.input_path = input_path
         self.output_path = output_path
-        self.chunk_size = chunk_size
-        self.overlap = overlap
 
-    def chunk_text(self, text):
+    def _format_concept_text(self, explanation_text, row):
+        """
+        Convert flat explanation into structured study-card format
+        """
 
-        chunks = []
+        explanation_clean = (
+          explanation_text
+            .replace(f"Topic: {row['topic']}.", "")
+            .replace("Topic:", "")
+            .replace("Explanation:", "")
+            .strip()
+         )
 
-        start = 0
-        length = len(text)
+        formatted = (
+            "=== CONCEPT ===\n"
+            f"Topic: {row['topic']}\n\n"
+            "Explanation:\n"
+            f"{explanation_clean}"
+        )
 
-        while start < length:
+        return formatted
 
-            end = start + self.chunk_size
+    def _format_qa_text(self, qa_text, row):
+        """
+        Convert flat QA text into structured exam-card format
+        """
 
-            # ⭐ try extend till sentence boundary
-            if end < length:
-                boundary = text.find(".", end)
+        qa_body = qa_text.replace("Question:", "").strip()
 
-                if boundary != -1 and boundary - end < 80:
-                    end = boundary + 1
+        if "Answer:" in qa_body:
+            question_part, answer_part = qa_body.split("Answer:", 1)
+        else:
+            question_part, answer_part = qa_body, ""
 
-            chunk = text[start:end].strip()
+        formatted = (
+            "=== EXAM QUESTION ===\n"
+            f"Topic: {row['topic']}\n"
+            f"Difficulty: {row['difficulty']}\n"
+            f"Type: {row['question_type']}\n\n"
+            "Question:\n"
+            f"{question_part.strip()}\n\n"
+            "Answer:\n"
+            f"{answer_part.strip()}"
+        )
 
-            chunks.append(chunk)
-
-            start += self.chunk_size - self.overlap
-
-        return chunks
+        return formatted
 
     def build_chunks(self):
 
@@ -56,39 +73,36 @@ class DatasetChunker:
 
             full_text = row["text"]
 
-            # ⭐ split concept and QA
+            # 🔵 Split concept and QA
             if "Question:" in full_text:
-
                 explanation_part = full_text.split("Question:")[0].strip()
-                qa_part = "Question:" + full_text.split("Question:")[1].strip()
-
+                qa_part = "Question:" + full_text.split("Question:", 1)[1].strip()
             else:
                 explanation_part = full_text
                 qa_part = None
 
-            # ⭐ concept chunks
-            concept_chunks = self.chunk_text(explanation_part)
+            # 🔵 Concept Chunk
+            concept_text = self._format_concept_text(explanation_part, row)
 
-            for c in concept_chunks:
+            all_chunks.append({
+                "chunk_id": chunk_id,
+                "text": concept_text,
+                "type": "concept",
+                "topic": row["topic"],
+                "difficulty": row["difficulty"],
+                "question_type": row["question_type"],
+                "complexity": row["complexity"]
+            })
 
-                all_chunks.append({
-                    "chunk_id": chunk_id,
-                    "text": c,
-                    "type": "concept",
-                    "topic": row["topic"],
-                    "difficulty": row["difficulty"],
-                    "question_type": row["question_type"],
-                    "complexity": row["complexity"]
-                })
+            chunk_id += 1
 
-                chunk_id += 1
-
-            # ⭐ QA chunk (single intact chunk)
+            # 🔵 QA Chunk
             if qa_part:
+                qa_text = self._format_qa_text(qa_part, row)
 
                 all_chunks.append({
                     "chunk_id": chunk_id,
-                    "text": qa_part,
+                    "text": qa_text,
                     "type": "qa",
                     "topic": row["topic"],
                     "difficulty": row["difficulty"],
