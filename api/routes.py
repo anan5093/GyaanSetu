@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException
 from api.schemas import ChatRequest
 import time
 
+# 🧠 Evaluation
+from evaluation.evaluator import Evaluator
+
 router = APIRouter()
 
 # ⭐ Global RAG instance
@@ -13,6 +16,9 @@ def set_rag_instance(rag):
     rag_instance = rag
 
 
+# =========================================
+# 💬 CHAT ENDPOINT
+# =========================================
 @router.post("/chat")
 def chat_endpoint(req: ChatRequest):
 
@@ -30,7 +36,7 @@ def chat_endpoint(req: ChatRequest):
 
         latency = time.time() - start_time
 
-        # 📚 Build sources
+        # 📚 Build sources (Top 3)
         sources = [
             {
                 "topic": c.get("topic"),
@@ -51,3 +57,37 @@ def chat_endpoint(req: ChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================================
+# 📊 EVALUATION ENDPOINT (NEW 🔥)
+# =========================================
+@router.get("/evaluation")
+def run_evaluation():
+
+    if rag_instance is None:
+        raise HTTPException(status_code=500, detail="RAG not initialized")
+
+    try:
+        evaluator = Evaluator(rag_instance)
+
+        results = evaluator.run_all()
+
+        return {
+            "status": "success",
+            "evaluation": results
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =========================================
+# ❤️ HEALTH CHECK (OPTIONAL BUT USEFUL)
+# =========================================
+@router.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "rag_loaded": rag_instance is not None
+    }

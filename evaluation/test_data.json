@@ -1,0 +1,12 @@
+[
+  {
+    "question": "What is rusting?",
+    "expected_answer": "Rusting is the corrosion of iron due to oxygen and moisture.",
+    "expected_topic": "Rusting of Iron"
+  },
+  {
+    "question": "What is velocity?",
+    "expected_answer": "Velocity is speed with direction.",
+    "expected_topic": "Motion"
+  }
+]
