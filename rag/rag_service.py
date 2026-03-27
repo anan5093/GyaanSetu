@@ -16,7 +16,7 @@ class RAGService:
         self.score_threshold = score_threshold
 
     # ===============================
-    # Retrieval Layer
+    # 🔍 Retrieval Layer
     # ===============================
     def retrieve(self, question):
         qvec = self.embedder.embed([question])[0]
@@ -26,7 +26,7 @@ class RAGService:
             k=self.top_k
         ) or []
 
-        # ⭐ Threshold Filtering
+        # ✅ Threshold Filtering
         filtered = [
             c for c in results
             if isinstance(c, dict) and c.get("score", 0) >= self.score_threshold
@@ -35,7 +35,7 @@ class RAGService:
         return filtered
 
     # ===============================
-    # Context Builder
+    # 🧠 Context Builder
     # ===============================
     def build_context(self, chunks):
         unique_texts = []
@@ -55,47 +55,47 @@ class RAGService:
         return "\n\n".join(unique_texts)
 
     # ===============================
-    # Answer Generation
+    # 🤖 Core RAG Pipeline (NEW ⭐)
+    # ===============================
+    def process_query(self, question):
+        chunks = self.retrieve(question)
+
+        if not chunks:
+            return {
+                "answer": "Answer not found in NCERT content.",
+                "chunks": []
+            }
+
+        context = self.build_context(chunks)
+
+        if not context.strip():
+            return {
+                "answer": "Answer not found in NCERT content.",
+                "chunks": chunks
+            }
+
+        prompt = self.prompt_builder.build(
+            context,
+            question
+        )
+
+        answer = self.llm_client.generate(prompt)
+
+        return {
+            "answer": answer,
+            "chunks": chunks
+        }
+
+    # ===============================
+    # 🧾 Legacy Method (kept for safety)
     # ===============================
     def ask(self, question):
-        chunks = self.retrieve(question)
-
-        if not chunks:
-            return "Answer not found in NCERT content."
-
-        context = self.build_context(chunks)
-
-        if not context.strip():
-            return "Answer not found in NCERT content."
-
-        prompt = self.prompt_builder.build(
-            context,
-            question
-        )
-
-        answer = self.llm_client.generate(prompt)
-
-        return answer
+        result = self.process_query(question)
+        return result["answer"]
 
     # ===============================
-    # Debug Mode
+    # 🧪 Debug Mode
     # ===============================
     def ask_with_debug(self, question):
-        chunks = self.retrieve(question)
-
-        if not chunks:
-            return "Answer not found in NCERT content.", []
-
-        context = self.build_context(chunks)
-
-        if not context.strip():
-            return "Answer not found in NCERT content.", chunks
-
-        prompt = self.prompt_builder.build(
-            context,
-            question
-        )
-
-        answer = self.llm_client.generate(prompt)
-
-        return answer, chunks
+        result = self.process_query(question)
+        return result["answer"], result["chunks"]

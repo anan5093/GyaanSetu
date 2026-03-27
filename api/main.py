@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import router, set_rag_instance
 
@@ -11,7 +12,16 @@ from llm.prompt_builder import PromptBuilder
 
 app = FastAPI(
     title="GyaanSetu NCERT Tutor API",
-    version="1.0"
+    version="1.1"
+)
+
+# ✅ CORS (IMPORTANT for React)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # later restrict in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(router)
@@ -45,6 +55,7 @@ def startup_event():
         prompt_builder
     )
 
+    # ✅ Inject into routes
     set_rag_instance(rag)
 
-    print("✅ Tutor Backend Ready!\n")
+    print("✅ Tutor Backend Ready with RAG + Metrics + Sources!\n")

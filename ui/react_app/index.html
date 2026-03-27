@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Core Meta -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Title -->
+    <title>NCERT Companion — AI Tutor for Classes 9–12</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- SEO -->
+    <meta name="description" content="NCERT Companion is an AI-powered tutor for Classes 9–12. Ask questions, learn concepts, and get instant NCERT-based answers." />
+    <meta name="keywords" content="NCERT, AI Tutor, Class 9, Class 10, Class 11, Class 12, Education AI, Study App India" />
+    <meta name="author" content="Anand Raj" />
+
+    <!-- Open Graph (Social Sharing) -->
+    <meta property="og:title" content="NCERT Companion — AI Tutor" />
+    <meta property="og:description" content="Your AI-powered NCERT learning companion." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/preview.png" />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Performance -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- App Style Base -->
+    <style>
+      html {
+        scroll-behavior: smooth;
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      /* 🔥 Loading Screen */
+      #loader {
+        position: fixed;
+        inset: 0;
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        z-index: 9999;
+      }
+
+      /* Simple animation */
+      .dot {
+        animation: blink 1.5s infinite;
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <!-- 🔥 LOADING SCREEN -->
+    <div id="loader">
+      🤖 Loading NCERT Companion<span class="dot">...</span>
+    </div>
+
+    <!-- React Root -->
+    <div id="root"></div>
+
+    <!-- App Script -->
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Remove loader after React mounts -->
+    <script>
+      window.addEventListener("load", () => {
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.style.opacity = "0";
+          loader.style.transition = "opacity 0.5s ease";
+          setTimeout(() => loader.remove(), 500);
+        }
+      });
+    </script>
+
+  </body>
+</html>
