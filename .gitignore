@@ -1,18 +1,77 @@
-# Virtual env
+# ===============================
+# 🐍 Python
+# ===============================
 .venv/
+env/
+venv/
 
-# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Env files
+# ===============================
+# 🔐 Environment Variables
+# ===============================
 .env
+.env.*
 
-# Generated datasets / KB artifacts
+# ===============================
+# 📦 Data / RAG Artifacts
+# ===============================
 data/
+vector_store/
+*.index
+*.faiss
 
-# Vector DB index
-vector_store/faiss_index/
+# ===============================
+# 🧠 Model / Embeddings Cache
+# ===============================
+*.bin
+*.pt
+*.onnx
 
-# OS junk
+# ===============================
+# ⚛️ React / Node
+# ===============================
+node_modules/
+ui/react_app/node_modules/
+
+dist/
+build/
+ui/react_app/dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===============================
+# 🐳 Docker
+# ===============================
+.dockerignore
+
+# ===============================
+# 💻 IDE / Editor
+# ===============================
+.vscode/
+.idea/
+
+# ===============================
+# 🖥 OS Files
+# ===============================
 .DS_Store
+Thumbs.db
+
+# ===============================
+# 📊 Evaluation / Temp Files
+# ===============================
+*.log
+*.csv
+*.sqlite3
+
+# ===============================
+# 🔥 Misc
+# ===============================
+*.tmp
+*.bak
