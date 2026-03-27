@@ -14,6 +14,7 @@
 - [What is GyaanSetu?](#what-is-gyaansetu)
 - [Key Features](#key-features)
 - [Architecture](#architecture)
+- [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Backend Setup](#backend-setup)
@@ -22,6 +23,7 @@
 - [Configuration](#configuration)
 - [API Reference](#api-reference)
 - [Evaluation](#evaluation)
+- [Getting Help](#getting-help)
 - [Contributing](#contributing)
 - [Maintainers](#maintainers)
 
@@ -76,6 +78,26 @@ HuggingFace Dataset
 │         React Frontend (Vite)            │
 │   Home  │  Chat  │  Evaluation Dashboard │
 └──────────────────────────────────────────┘
+```
+
+---
+
+## Project Structure
+
+```
+GyaanSetu/
+├── api/                    # FastAPI application (routes, schemas)
+├── config/                 # Environment-based settings
+├── evaluation/             # Evaluation framework & test data
+├── ingestion/              # Data loading, cleaning, chunking, embedding
+├── llm/                    # LLM factory, OpenRouter client, MockLLM, prompt builder
+├── rag/                    # Core RAG service (retrieve → context → generate)
+├── scripts/                # Utility scripts for ingestion, RAG, and retrieval testing
+├── ui/react_app/           # React 19 + Vite frontend (Home, Chat, Evaluation pages)
+├── vector_store/           # FAISS index builder and loader
+├── Dockerfile
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -282,13 +304,28 @@ python scripts/test_rag.py
 
 ---
 
+## Getting Help
+
+- **Bug reports & feature requests** — open an issue on the [GitHub Issues](https://github.com/anan5093/GyaanSetu/issues) page
+- **Interactive API docs** — available at `http://localhost:8000/docs` when the server is running
+- **OpenRouter models** — see [openrouter.ai/models](https://openrouter.ai/models) for supported LLM identifiers
+- **NCERT dataset** — hosted on HuggingFace at [`KadamParth/NCERT_Science_10th`](https://huggingface.co/datasets/KadamParth/NCERT_Science_10th)
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please open an issue first to discuss significant changes.
 
 1. Fork the repository and create a feature branch
 2. Make your changes with clear commit messages
-3. Ensure existing tests pass: `python scripts/test_ingestion.py` and `python scripts/test_rag.py`
+3. Ensure existing tests pass:
+
+```bash
+python scripts/test_ingestion.py
+python scripts/test_rag.py
+python scripts/test_vector_retrieval.py
+```
 4. Open a pull request against `main`
 
 ---
