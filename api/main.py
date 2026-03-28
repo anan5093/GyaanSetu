@@ -1,10 +1,13 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import router, set_rag_instance
 
 from vector_store.faiss_loader import FAISSLoader
-from ingestion.embedder import Embedder
 from rag.rag_service import RAGService
 from llm.llm_factory import LLMFactory
 from llm.prompt_builder import PromptBuilder
@@ -38,19 +41,15 @@ def startup_event():
         subject="science"
     )
 
-    # ⭐ Embedder
-    embedder = Embedder()
-
     # ⭐ LLM
     llm = LLMFactory.create()
 
     # ⭐ Prompt Builder
     prompt_builder = PromptBuilder()
 
-    # ⭐ RAG Service
+    # ⭐ RAG Service (embedder removed)
     rag = RAGService(
         store,
-        embedder,
         llm,
         prompt_builder
     )

@@ -2,14 +2,12 @@ class RAGService:
     def __init__(
         self,
         vector_store,
-        embedder,
         llm_client,
         prompt_builder,
         top_k=3,
         score_threshold=0.35
     ):
         self.vector_store = vector_store
-        self.embedder = embedder
         self.llm_client = llm_client
         self.prompt_builder = prompt_builder
         self.top_k = top_k
@@ -19,10 +17,10 @@ class RAGService:
     # 🔍 Retrieval Layer
     # ===============================
     def retrieve(self, question):
-        qvec = self.embedder.embed([question])[0]
 
+        # ✅ Direct search (no embedder)
         results = self.vector_store.search(
-            qvec,
+            question,
             k=self.top_k
         ) or []
 
@@ -55,7 +53,7 @@ class RAGService:
         return "\n\n".join(unique_texts)
 
     # ===============================
-    # 🤖 Core RAG Pipeline (NEW ⭐)
+    # 🤖 Core RAG Pipeline
     # ===============================
     def process_query(self, question):
         chunks = self.retrieve(question)
@@ -87,7 +85,7 @@ class RAGService:
         }
 
     # ===============================
-    # 🧾 Legacy Method (kept for safety)
+    # 🧾 Legacy Method
     # ===============================
     def ask(self, question):
         result = self.process_query(question)

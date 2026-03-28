@@ -2,6 +2,8 @@ import faiss
 import json
 import os
 import numpy as np
+from sentence_transformers import SentenceTransformer  # ✅ added
+
 
 class FAISSLoader:
     def __init__(self, class_id, subject, base_dir="data"):
@@ -27,7 +29,16 @@ class FAISSLoader:
         with open(self.meta_path, "r", encoding="utf-8") as f:
             self.meta = json.load(f)
 
-    def search(self, qvec, k=5):
+        # ✅ NEW: lightweight embedder
+        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+    def search(self, query, k=5):
+
+        # ✅ NEW: handle both string + vector
+        if isinstance(query, str):
+            qvec = self.embedder.encode([query])[0]
+        else:
+            qvec = query
 
         qvec = np.array([qvec]).astype("float32")
 
